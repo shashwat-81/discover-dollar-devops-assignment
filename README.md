@@ -1,27 +1,71 @@
-In this DevOps task, you need to build and deploy a full-stack CRUD application using the MEAN stack (MongoDB, Express, Angular 15, and Node.js). The backend will be developed with Node.js and Express to provide REST APIs, connecting to a MongoDB database. The frontend will be an Angular application utilizing HTTPClient for communication.  
+# Discover Dollar DevOps Assignment – MEAN CRUD App
 
-The application will manage a collection of tutorials, where each tutorial includes an ID, title, description, and published status. Users will be able to create, retrieve, update, and delete tutorials. Additionally, a search box will allow users to find tutorials by title.
+## 1. Project Overview
 
-## Project setup
+This project is a **Dockerized MEAN (MongoDB, Express, Angular, Node.js) CRUD application** deployed on an **AWS EC2 Ubuntu instance** using **Docker Compose** and **Nginx** as a reverse proxy.  
 
-### Node.js Server
+A **GitHub Actions CI/CD pipeline** automatically:
 
-cd backend
+- Builds frontend & backend Docker images
+- Pushes images to Docker Hub (`shashwat292/mean-frontend`, `shashwat292/mean-backend`)
+- SSHs into the EC2 VM
+- Pulls the latest images and restarts containers
 
-npm install
+**Live URL:** `http://34.204.183.25/` (HTTP on port 80)
 
-You can update the MongoDB credentials by modifying the `db.config.js` file located in `app/config/`.
+---
 
-Run `node server.js`
+## 2. Tech Stack
 
-### Angular Client
+- **Frontend:** Angular 15, served via Nginx inside container
+- **Backend:** Node.js, Express, Mongoose
+- **Database:** MongoDB (Docker container)
+- **Reverse Proxy:** Nginx on EC2 (port 80)
+- **Containerization:** Docker, Docker Compose
+- **CI/CD:** GitHub Actions + Docker Hub
+- **Cloud:** AWS EC2 (Ubuntu 24.04)
 
-cd frontend
+---
 
-npm install
+## 3. Architecture
 
-Run `ng serve --port 8081`
+**Services:**
 
-You can modify the `src/app/services/tutorial.service.ts` file to adjust how the frontend interacts with the backend.
+- `frontend`  
+  - Image: `shashwat292/mean-frontend:latest`  
+  - Runs Angular build served by Nginx  
+  - Exposes port `80` inside container → mapped to host `4200`
 
-Navigate to `http://localhost:8081/`
+- `backend`  
+  - Image: `shashwat292/mean-backend:latest`  
+  - Node.js + Express + Mongoose REST API  
+  - Uses `MONGO_URL=mongodb://mongo:27017/bezkoder_db`  
+  - Exposes port `8080` inside container → mapped to host `8081`
+
+- `mongo`  
+  - Image: `mongo:6.0`  
+  - Data stored in named volume `mongo_data`
+
+- `nginx` (host-level, not in compose)  
+  - Listens on port **80**  
+  - Proxies:
+    - `/` → `frontend` on `127.0.0.1:4200`
+    - `/api/` → `backend` on `127.0.0.1:8081/api/`
+
+---
+
+## 4. Local Setup and Run (with Docker)
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Steps
+
+```bash
+git clone https://github.com/shashwat-81/discover-dollar-devops-assignment.git
+cd discover-dollar-devops-assignment
+
+docker compose up -d
+docker compose ps
