@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: dd-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    image: shashwat292/mean-backend:latest
+    container_name: dd-backend
+    restart: always
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/bezkoder_db
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8080"
+
+  frontend:
+    image: shashwat292/mean-frontend:latest
+    container_name: dd-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  mongo_data:

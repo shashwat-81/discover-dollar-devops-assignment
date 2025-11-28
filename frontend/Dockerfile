@@ -1,16 +1,17 @@
-# frontend/Dockerfile
-FROM node:18-alpine
-
+# Stage 1 - Build Angular App
+FROM node:18-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
 
-# Copy Angular code
 COPY . .
+# build for production
+RUN npm run build --prod
 
-EXPOSE 4200
-
-# For Angular dev server
-CMD ["npm", "run", "start"]
-# Or ["ng", "serve", "--host", "0.0.0.0"] if that's how the project runs
+# Stage 2 - Serve with Nginx
+FROM nginx:alpine
+# 👇 IMPORTANT: use the exact dist folder name
+COPY --from=build /app/dist/angular-15-crud /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
